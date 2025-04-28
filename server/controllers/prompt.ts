@@ -28,7 +28,7 @@ Steps:
 - A title
 - A 50–80 word segment of the story
 - A one-line illustration prompt including any visualized inputs (e.g., the favorite object, clothing in the favorite color)
-`
+`;
 const rules = `
 The story must be an original retelling inspired by a classic structure
 The tone should be:Warm, rhythmic, and engaging
@@ -120,10 +120,10 @@ Illustration prompt: Gaga in her rocket, badge shining, tucking teddy under a bl
 `;
 
 // Store conversation history with proper typing
-export const storyHistory= [
-{
-role: "system",
-content: `
+export const storyHistory = [
+  {
+    role: 'system',
+    content: `
     ${role}
 
     ${task}
@@ -136,5 +136,5 @@ content: `
 
     Reference Examples:
     ${examples}`,
-    }
+  }
 ];

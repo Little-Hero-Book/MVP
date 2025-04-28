@@ -16,13 +16,20 @@ export const queryOpenAI: RequestHandler = async (_req, res, next) => {
     return next(error);
   }
 
+  console.log('naturalLanguageQuery:', JSON.stringify(naturalLanguageQuery))
+
   const getApiResponse = async () => {
     try {
       const response = await openai.chat.completions.create({
         model: 'gpt-4',
         //prompt
-        messages: storyHistory as OpenAI.Chat.ChatCompletionMessageParam[],
-
+        messages: [
+          ...storyHistory,
+          {
+            role: 'user',
+            content: JSON.stringify(naturalLanguageQuery),
+          },
+        ] as OpenAI.Chat.ChatCompletionMessageParam[],
       });
       if (!response.choices[0].message.content) {
         const error: ServerError = {
