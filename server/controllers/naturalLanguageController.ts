@@ -1,22 +1,23 @@
 import { Request, RequestHandler } from 'express';
 import { ServerError } from '../types';
 
-const mockUserInput = {
-  name: 'gaga',
-  age: 4,
-  storyType: 'adventure',
-  trait: 'brave',
-  favoriteColor: 'blue',
-  favoriteObj: 'dog',
-}
+// const mockUserInput = {
+//   name: 'gaga',
+//   age: 4,
+//   storyType: 'adventure',
+//   trait: 'brave',
+//   favoriteColor: 'blue',
+//   favoriteObj: 'dog',
+// }
 
-export let naturalLanguageQuery = {};
+export const naturalLanguageQuery = {};
 
 export const parseNaturalLanguageQuery: RequestHandler = async (
   req: Request<unknown, unknown, Record<string, unknown>>,
   res,
   next
 ) => {
+  console.log(req.body.naturalLanguageQuery)
   if (!req.body.naturalLanguageQuery) {
     const error: ServerError = {
       log: 'Natural language query not provided',
@@ -26,9 +27,9 @@ export const parseNaturalLanguageQuery: RequestHandler = async (
     return next(error);
   }
 
-  //const { naturalLanguageQuery } = req.body;
+  const { naturalLanguageQuery } = req.body;
   //use mock user input for now
-  naturalLanguageQuery = mockUserInput;
+  // naturalLanguageQuery = mockUserInput;
 
   if (!naturalLanguageQuery) {
     const error: ServerError = {

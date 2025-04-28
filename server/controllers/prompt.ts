@@ -136,9 +136,5 @@ export const storyHistory = [
 
     Reference Examples:
     ${examples}`,
-  },
-  {
-    role:'user',
-    content:naturalLanguageQuery
   }
 ];
