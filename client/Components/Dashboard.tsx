@@ -1,33 +1,40 @@
 import React, { useState } from 'react';
 
 const Dashboard = () => {
-  const [naturalLanguageQuery, setNaturalLanguageQuery] = useState('');
-  const [databaseQuery, setDatabaseQuery] = useState('');
-
+  const [form, setForm] = useState({
+    name: '',
+    age: '',
+    trait: '',
+    favoriteThing: '',
+    favoriteColor: '',
+    storyType: '',
+  });
+  const [story, setStory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setDatabaseQuery('');
+    
     try {
-      const converterResponse = await fetch('/api', {
+      const response = await fetch('/api', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ naturalLanguageQuery }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ naturalLanguageQuery: form }),
       });
 
-      if (converterResponse.status !== 200) {
-        const parsedError: { err: string } = await converterResponse.json();
+      if (response.status !== 200) {
+        const parsedError: { err: string } = await response.json();
         setError(parsedError.err);
       } else {
-        const parsedConverterResponse =
-          await converterResponse.json();
-        setDatabaseQuery(parsedConverterResponse.databaseResponse);
+        const data = await response.json();
+        setStory(data.databaseResponse);
       }
     } catch (_err) {
       setError('Error processing your request.');
@@ -39,21 +46,53 @@ const Dashboard = () => {
   return (
     <div className="container">
       <form onSubmit={handleSubmit}>
-        <textarea
-          value={naturalLanguageQuery}
-          onChange={(e) => setNaturalLanguageQuery(e.target.value)}
-          placeholder="Enter your natural language query here..."
-          required
+        <input
+          name='name'
+          value={form.name}
+          onChange={handleChange}
+          placeholder='Name'
+        />
+        <input
+          name='age'
+          value={form.age}
+          onChange={handleChange}
+          placeholder='Age'
+        />
+        <input
+          name='trait'
+          value={form.trait}
+          onChange={handleChange}
+          placeholder='Trait'
+        />
+        <input
+          name='favoriteThing'
+          value={form.favoriteThing}
+          onChange={handleChange}
+          placeholder='Favorite Thing'
+        />
+        <input
+          name='favoriteColor'
+          value={form.favoriteColor}
+          onChange={handleChange}
+          placeholder='Favorite Color'
+        />
+        <input
+          name='storyType'
+          value={form.storyType}
+          onChange={handleChange}
+          placeholder='Story Type'
         />
         <button type="submit" disabled={loading}>
-          {loading ? 'Converting...' : 'Convert and Execute'}
+          {loading ? 'Generating...' : 'Generate Story'}
         </button>
       </form>
+
       {error && <p className="error">{error}</p>}
-      {databaseQuery && (
-        <div className="result">
-          <h2>Story</h2>
-          <pre>{databaseQuery}</pre>
+      
+      {story && (
+        <div className="story-container">
+          <h2>Your Story</h2>
+          <p>{story}</p>
         </div>
       )}
     </div>
