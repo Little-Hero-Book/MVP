@@ -8,7 +8,9 @@
     "start": "npm run start:backend & npm run start:frontend",
     "start:frontend": "node start-frontend.js",
     "start:backend": "nodemon --exec node --no-warnings=ExperimentalWarning --loader ts-node/esm ./server/server.ts",
-    "test": "jest"
+    "test": "jest",
+    "embed": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./offline/embed.ts",
+    "upsert": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./offline/upsert-batch.ts"
   },
   "keywords": [],
   "author": "",
@@ -55,6 +57,7 @@
     "whatwg-fetch": "^3.6.20"
   },
   "dependencies": {
+    "@pinecone-database/pinecone": "^5.1.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
