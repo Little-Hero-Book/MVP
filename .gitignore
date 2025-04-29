@@ -135,4 +135,8 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+# Sample embeddings
 offline/sample_embeddings.json
+
+# macOS stuff
+.DS_Store
