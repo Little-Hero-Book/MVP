@@ -2,11 +2,12 @@ import { RequestHandler } from 'express';
 import { ServerError } from '../types';
 import OpenAI from 'openai';
 import { storyHistory } from './prompt.ts';
+import { Server } from 'http';
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 })
 export const queryOpenAI: RequestHandler = async (_req, res, next) => {
-  const { naturalLanguageQuery } = res.locals;
+  const { naturalLanguageQuery, pineconeQueryResult } = res.locals;
   if (!naturalLanguageQuery) {
     const error: ServerError = {
       log: 'OpenAI query middleware did not receive user input',
@@ -16,7 +17,17 @@ export const queryOpenAI: RequestHandler = async (_req, res, next) => {
     return next(error);
   }
 
+  if (!pineconeQueryResult) {
+    const error: ServerError = {
+      log: 'OpenAI query middleware did not receive Pinecone Query Result',
+      status: 500,
+      message: { err: 'An error occurred before querying OpenAI' }
+    }
+    return next(error)
+  }
+
   console.log('naturalLanguageQuery:', JSON.stringify(naturalLanguageQuery))
+  // console.log(`pineconeQueryResult: ${JSON.stringify(pineconeQueryResult[0].metadata)}`)
 
   const getApiResponse = async () => {
     try {
@@ -25,6 +36,10 @@ export const queryOpenAI: RequestHandler = async (_req, res, next) => {
         //prompt
         messages: [
           ...storyHistory,
+          {
+            role: 'system',
+            content: JSON.stringify(pineconeQueryResult)
+          },
           {
             role: 'user',
             content: JSON.stringify(naturalLanguageQuery),

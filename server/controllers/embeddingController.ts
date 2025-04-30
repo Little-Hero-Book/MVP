@@ -10,20 +10,24 @@ const openai = new OpenAI();
  */
 export const generateUserInputEmbeddings: RequestHandler = async (_req, res, next) => {
   const { naturalLanguageQuery } = res.locals;
+  const storyElement = JSON.stringify(naturalLanguageQuery.storyElement)
   try {
     const response = await openai.embeddings.create({
       model: 'text-embedding-3-small',
-      input: naturalLanguageQuery,
+      input: storyElement,
       encoding_format: 'float',
     });
 
-    const embeddings = [{
-        text: naturalLanguageQuery,
-        embedding: response.data[0].embedding
-    }]
+    const embeddings = {
+      text: storyElement,
+      embedding: response.data[0].embedding,
+    };
 
-    res.locals.userInputEmbeddings = embeddings;
-    console.log('user input successfully converted to embeddings')
+    res.locals.userInputEmbeddings = embeddings.embedding;
+    console.log(
+      'user input successfully converted to embeddings, input converted: ',
+      storyElement
+    );
     next();
   } catch (error) {
     console.error('Failed to generate embeddings:', error);

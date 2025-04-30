@@ -39,6 +39,6 @@ export const parseNaturalLanguageQuery: RequestHandler = async (
     };
     return next(error);
   }
-  res.locals.naturalLanguageQuery = JSON.stringify(naturalLanguageQuery);
+  res.locals.naturalLanguageQuery = naturalLanguageQuery;
   return next();
 };
