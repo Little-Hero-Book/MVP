@@ -7,6 +7,7 @@ import { queryOpenAI } from './controllers/openaiController.js';
 import { databaseController } from './controllers/databaseController.js';
 
 import { ServerError } from './types';
+import { generateUserInputEmbeddings } from './controllers/embeddingController.js';
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.post(
   '/api',
   parseNaturalLanguageQuery,
+  generateUserInputEmbeddings,
   queryOpenAI,
   databaseController,
   (_req, res) => {
