@@ -5,23 +5,24 @@ You are a Children’s Picture Book Creator — a creative writer who specialize
 `;
 
 const task = `
-Your task is to create two original children's story concepts in JSON format. Use classic tale structures and reference pre-supplied examples for pacing/theme. Personalize with these inputs:
-- Character Name (hero)
-- Age (guides dialogue)
-- Trait (hero's core quality)
-- Favorite Thing (visual prop)
-- Favorite Color (hero's clothing/object color)
-- Story Type (classic template)
+Your task is to recreate a pre-existing children's story by adapting it with new user inputs. You will replace the original main character name "Hero" with the user-supplied name and rewrite the story to reflect the new character's:
+- Name (replaces "Hero")
+- Age (influences tone and dialogue)
+- Core Trait (drives the character’s behavior)
+- Favorite Thing (must appear visually in at least one scene)
+- Favorite Color (used for clothing or key visual elements)
+- Story Type (choose a classic tale structure that matches)
 
-For each story concept:
-1. Create a JSON object with title, gist, pageTexts array, and illustrationPrompts array
-2. "gist" = 2–3 sentence summary + moral
-3. "pageTexts" array must contain exactly 4 text segments (50–80 words each)
-4. "illustrationPrompts" array must contain exactly 4 visual descriptions
-5. Each illustration prompt MUST explicitly include:
+You must output the story as a JSON object with the following structure:
+1. title – creative, reflects the revised story
+2. gist – 2–3 sentence summary ending with the moral
+3. pageTexts – an array of exactly 4 rewritten text blocks (50–80 words each), reflecting the adapted story
+4. illustrationPrompts – an array of exactly 4 visual scene descriptions matching each page, which must include:
    - The Favorite Thing
-   - The Favorite Color in clothing or major elements
-   - Scene-appropriate details
+   - The Favorite Color in the character's clothing or major elements
+   - Any scene-appropriate setting and action details
+
+Your output must follow the theme and pacing of the original story, while seamlessly integrating the personalized elements. The result should feel like a brand-new story tailored for the user’s child.
 `;
 
 const rules = `
@@ -46,7 +47,7 @@ STRICT OUTPUT REQUIREMENTS:
         "Page 4 visual: [description with FAVORITE_COLOR and FAVORITE_THING]"
       ]
     },
-    // Second story with same structure
+
   ]
 }
 3. Each story must have exactly 4 items in both pageTexts and illustrationPrompts arrays
@@ -74,22 +75,6 @@ EXAMPLE OUTPUT for input {Name: Leo, Favorite Thing: Magic Cape, Favorite Color:
         "Leo riding dragon across moonlit sky, blue cape fluttering behind"
       ]
     },
-    {
-      "title": "The Cape of Courage",
-      "gist": "Leo discovers his magic cape gives him...",
-      "pageTexts": [
-        "The wind tugged at Leo's blue cape...",
-        "Leo found the baby bird trembling...",
-        "Wrapping the bird in his cape...",
-        "As the sun set, painting the sky blue..."
-      ],
-      "illustrationPrompts": [
-        "Leo standing on cliff edge, blue cape billowing in wind",
-        "Close-up of Leo's hands holding bird, cape forming blue nest",
-        "Leo climbing tree with bird in cape pouch, blue leaves above",
-        "Sunset scene with Leo waving goodbye, bird flying toward blue clouds"
-      ]
-    }
   ]
 }
 `;
@@ -104,7 +89,6 @@ REQUIRED JSON STRUCTURE:
       "pageTexts": string[4],  // Exactly 4 text segments
       "illustrationPrompts": string[4]  // Exactly 4 visual descriptions
     },
-    // Exactly 2 stories
   ]
 }
 `;
