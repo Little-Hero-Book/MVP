@@ -26,9 +26,6 @@ export const queryOpenAI: RequestHandler = async (_req, res, next) => {
     return next(error)
   }
 
-  console.log('naturalLanguageQuery:', JSON.stringify(naturalLanguageQuery))
-  // console.log(`pineconeQueryResult: ${JSON.stringify(pineconeQueryResult[0].metadata)}`)
-
   const getApiResponse = async () => {
     try {
       const response = await openai.chat.completions.create({

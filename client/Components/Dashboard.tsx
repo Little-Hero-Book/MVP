@@ -8,14 +8,28 @@ const Dashboard = () => {
     favoriteThing: '',
     favoriteColor: '',
     storyType: '',
-    storyElement: '',
+   // storyElement: '',
+    
   });
+  const [files, setFiles] = useState<FileList | null>(null);
   const [story, setStory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    console.log(`Updating form field: ${name} = ${value}`);
+    setForm(prevForm => {
+      const newForm = { ...prevForm, [name]: value };
+      console.log('Updated form state:', newForm);
+      return newForm;
+    });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles(e.target.files);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,10 +38,35 @@ const Dashboard = () => {
     setError('');
     
     try {
+      const formData = new FormData();
+      
+      // Append form fields with correct names
+      Object.entries(form).forEach(([key, value]) => {
+        if (value) {  // Only append if value exists
+          formData.append(key, value);
+        }
+      });
+      
+      // Append files if they exist
+      if (files) {
+        Array.from(files).forEach((file) => {
+          formData.append('images', file);
+        });
+      }
+
+      // Debug: Log form data contents
+      console.log('Form fields:');
+      for (const [key, value] of formData.entries()) {
+        if (key !== 'images') {
+          console.log(`${key}: ${value}`);
+        }
+      }
+      
+      console.log('Files:', files ? Array.from(files).map(f => f.name) : 'No files selected');
+
       const response = await fetch('/api', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ naturalLanguageQuery: form }),
+        body: formData,
       });
 
       if (response.status !== 200) {
@@ -83,11 +122,18 @@ const Dashboard = () => {
           onChange={handleChange}
           placeholder='Story Type'
         />
-        <input
+        {/* <input
           name='storyElement'
           value={form.storyElement}
           onChange={handleChange}
           placeholder='Element to include in story (optional)'
+        /> */}
+        <input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleFileChange}
+          style={{ margin: '10px 0' }}
         />
         <button type="submit" disabled={loading}>
           {loading ? 'Generating...' : 'Generate Story'}

@@ -34,11 +34,6 @@ export const queryPineconeDatabase: RequestHandler = async (
 
   // we will query pinecone for similar embeddings and store them in pineconeQueryResult
 
-  console.log(
-    'userInputEmbeddings',
-    JSON.stringify(userInputEmbeddings, null, 2).slice(0,1024)
-  );
-
   const vectorResponse = await index.query({
     // topK is the number of results to return
     topK: 2,
@@ -48,10 +43,10 @@ export const queryPineconeDatabase: RequestHandler = async (
     // filter,
   });
 
-  console.log(
-    'vectorResponse',
-    vectorResponse.matches.map((match) => match.metadata?.title)
-  );
+  // console.log(
+  //   'vectorResponse',
+  //   vectorResponse.matches.map((match) => match.metadata?.title)
+  // );
 
   const pineconeResultsObj = {
     'story1': vectorResponse.matches[0].metadata,
