@@ -7,6 +7,8 @@ import { queryOpenAI } from './controllers/openaiController.js';
 import { databaseController } from './controllers/databaseController.js';
 
 import { ServerError } from './types';
+import { generateUserInputEmbeddings } from './controllers/embeddingController.js';
+import { queryPineconeDatabase } from './controllers/pineconeController.js';
 
 const app = express();
 
@@ -16,6 +18,8 @@ app.use(express.json());
 app.post(
   '/api',
   parseNaturalLanguageQuery,
+  generateUserInputEmbeddings,
+  queryPineconeDatabase,
   queryOpenAI,
   databaseController,
   (_req, res) => {

@@ -8,6 +8,7 @@ const Dashboard = () => {
     favoriteThing: '',
     favoriteColor: '',
     storyType: '',
+    storyElement: '',
   });
   const [story, setStory] = useState('');
   const [loading, setLoading] = useState(false);
@@ -81,6 +82,12 @@ const Dashboard = () => {
           value={form.storyType}
           onChange={handleChange}
           placeholder='Story Type'
+        />
+        <input
+          name='storyElement'
+          value={form.storyElement}
+          onChange={handleChange}
+          placeholder='Element to include in story (optional)'
         />
         <button type="submit" disabled={loading}>
           {loading ? 'Generating...' : 'Generate Story'}
