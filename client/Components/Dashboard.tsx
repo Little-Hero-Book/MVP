@@ -131,7 +131,7 @@ const Dashboard = () => {
         <input
           type="file"
           multiple
-          accept="image/*"
+          accept="image/png,image/jpeg,image/webp"
           onChange={handleFileChange}
           style={{ margin: '10px 0' }}
         />
