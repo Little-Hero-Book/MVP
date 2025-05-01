@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ServerError } from '../types';
 import OpenAI, { toFile } from 'openai';
 import { Image } from 'openai/resources/images';
+import fs from 'fs';
 
 const openAIclient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -26,14 +27,29 @@ export const generateIllustrations = async (
 
     // generate cartoonified version of the hero for img model reference
     const heroImg = await genHeroImg(heroPhoto, heroPhotoMimeType);
-    res.locals.heroImg = heroImg
+    res.locals.heroImg = heroImg;
 
     // get info about number of illustrations and their prompts
-    const illustrationPrompts = res.locals.illustrationPrompts;
+    const illustrationPrompts = [...res.locals.illustrationPrompts];
     const numberOfPages = illustrationPrompts.length;
 
     // generate actual illustrations
-    const illustrations = [] as string[];
+    const illustrations = [] as Buffer[];
+    const contextImages = [heroImg]
+    const initialPrompt = `These are illustrations for a short picture book of ${numberOfPages} pages.
+                           The hero of the story is ${heroName}.
+                           The first image is of the hero.
+                           
+                           The following are the illustration prompts for each page:\n\n${illustrationPrompts.join('\n\n')}`
+    for (let i=0; i < illustrationPrompts.length; i++) {
+      const tempPrompt = initialPrompt + '\n\n' + `Generate the image for page ${i} using the following images as context and the following:
+      ${illustrationPrompts[i]}`
+      const currentIllustration = await genImg(tempPrompt, contextImages);
+      contextImages.push(currentIllustration);
+      illustrations.push(currentIllustration);
+    }
+    res.locals.illustrations = illustrations;
+    dumpBuffersToPngFiles(illustrations);  // dump the outputs to disk for testing
 
     next();
   } catch (err) {
@@ -67,6 +83,21 @@ const genHeroImg = async (photo: Buffer, mimeType: string): Promise<Buffer> => {
   const rspImgBase64 = rspImageData?[0].b64_json;
   const imgBytes = Buffer.from(rspImgBase64, 'base64');
   return imgBytes;
+};
+
+const genImg = async (prompt: string, contextImgs: Buffer[]): Promise<Buffer> => {
+  const rsp = await openAIclient.images.edit({
+    model: imgModel,
+    image: await Promise.all(contextImgs.map(async (img) => await toFile(img, null, { type: 'image/png' }))),
+    prompt: prompt,
+    quality: imgOutputQuality,
+    size: imgOutputSize,
+  });
+  return Buffer.from(rsp.data[0].b64_json, 'base64')
+};
+
+const dumpBuffersToPngFiles = (imgBuffers: Buffer[]) => {
+  imgBuffers.forEach((buff, idx) => fs.writeFileSync(`${idx}.png`, buff))
 };
 
 // dry-run test
