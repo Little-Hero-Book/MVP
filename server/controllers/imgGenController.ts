@@ -3,7 +3,7 @@ import { ServerError } from '../types';
 import OpenAI, { toFile } from 'openai';
 import { Image } from 'openai/resources/images';
 
-const openAIclient = new OpenAI();
+const openAIclient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // constants
 const imgModel = '';
@@ -46,27 +46,27 @@ export const generateIllustrations = async (
   }
 };
 
-const genHeroImg = async (photo, mimeType): Promise<Buffer> => {
+const genHeroImg = async (photo: Buffer, mimeType: string): Promise<Buffer> => {
   const prompt = `This is a photo of someone who will be a hero in a story book.
                   Please generate a cartoonish version of them that's worthy of
                   a picture book illustration. Make sure the face and hair style
                   matches that of the original photo.`;
-  
+
   const rsp = await openAIclient.images.edit({
     model: imgModel,
-    image: photo,
+    image: await toFile(photo, null, { type: mimeType }),
     prompt: prompt,
     quality: imgOutputQuality,
     size: imgOutputSize,
-    response_format: imgOutputRspFormat
+    response_format: imgOutputRspFormat,
   });
 
   if (!rsp.data) {
-    throw new ReferenceError('image data not returned for hero image')
+    throw new ReferenceError('image data not returned for hero image');
   }
-  const rspImageData = rsp.data?[0] as Image;
-  const rspImgBase64 = rspImageData.b64_json;
-  const imgBytes = Buffer.from(rspImgBase64, 'base64')
+  const rspImageData = rsp.data as Image[];
+  const rspImgBase64 = rspImageData[0].b64_json;
+  const imgBytes = Buffer.from(rspImgBase64, 'base64');
   return imgBytes;
 };
 
@@ -75,6 +75,12 @@ const mainTest = async () => {
   console.log(`OPENAI_API_KEY is: ${process.env.OPENAI_API_KEY}`);
 
   console.log('The test should be here somewhere...');
+
+  // test genHeroImg
+  const fs = await import('fs');
+  const inputImg = fs.readFileSync('./testHero.jpg');
+  const heroImg = await genHeroImg(inputImg, 'image/jpeg');
+  fs.writeFileSync('testHeroImg.png', heroImg);
 };
 
 mainTest();
