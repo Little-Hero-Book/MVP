@@ -6,10 +6,9 @@ import { Image } from 'openai/resources/images';
 const openAIclient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // constants
-const imgModel = '';
+const imgModel = 'gpt-image-1';
 const imgOutputSize = '1024x1024';
 const imgOutputQuality = 'low';
-const imgOutputRspFormat = 'b64_json';
 
 // this is the main function to be used as middleware
 // all other functions are helper functions
@@ -27,6 +26,7 @@ export const generateIllustrations = async (
 
     // generate cartoonified version of the hero for img model reference
     const heroImg = await genHeroImg(heroPhoto, heroPhotoMimeType);
+    res.locals.heroImg = heroImg
 
     // get info about number of illustrations and their prompts
     const illustrationPrompts = res.locals.illustrationPrompts;
@@ -58,14 +58,13 @@ const genHeroImg = async (photo: Buffer, mimeType: string): Promise<Buffer> => {
     prompt: prompt,
     quality: imgOutputQuality,
     size: imgOutputSize,
-    response_format: imgOutputRspFormat,
   });
 
   if (!rsp.data) {
     throw new ReferenceError('image data not returned for hero image');
   }
   const rspImageData = rsp.data as Image[];
-  const rspImgBase64 = rspImageData[0].b64_json;
+  const rspImgBase64 = rspImageData?[0].b64_json;
   const imgBytes = Buffer.from(rspImgBase64, 'base64');
   return imgBytes;
 };
