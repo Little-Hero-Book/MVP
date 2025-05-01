@@ -49,9 +49,9 @@ export const queryPineconeDatabase: RequestHandler = async (
   // );
 
   const pineconeResultsObj = {
-    'story1': vectorResponse.matches[0].metadata,
-    'story2': vectorResponse.matches[1].metadata
-  }
+    story1: vectorResponse.matches[0].metadata,
+    story2: vectorResponse.matches[1].metadata,
+  };
 
   res.locals.pineconeQueryResult = pineconeResultsObj;
   return next();
