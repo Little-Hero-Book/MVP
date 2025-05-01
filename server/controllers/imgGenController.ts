@@ -25,7 +25,10 @@ export const generateIllustrations = async (
     const heroPhotoMimeType = files[0]?.mimetype;
 
     // generate cartoonified version of the hero for img model reference
+    console.log(`Generating Hero image of ${heroName}`);
+    let startTime = Date.now();
     const heroImg = await genHeroImg(heroPhoto, heroPhotoMimeType);
+    console.log(`Elapsed time: ${(Date.now() - startTime) / 1000} seconds`);
     res.locals.heroImg = heroImg;
 
     // get info about number of illustrations and their prompts
@@ -50,11 +53,15 @@ export const generateIllustrations = async (
         '\n\n' +
         `Generate the image for page ${i} using the following images as context and the following:
       ${illustrationPrompts[i]}`;
+      console.log(`Generating illustration for page ${i}`);
+      startTime = Date.now();
       const currentIllustration = await genImg(tempPrompt, contextImages);
+      console.log(`Elapsed time: ${(Date.now() - startTime) / 1000} seconds`);
       contextImages.push(currentIllustration);
       illustrations.push(currentIllustration);
     }
     res.locals.illustrations = illustrations;
+    fs.writeFileSync('heroImg.png', heroImg);
     dumpBuffersToPngFiles(illustrations); // dump the outputs to disk for testing
 
     next();
