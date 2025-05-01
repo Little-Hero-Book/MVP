@@ -67,7 +67,7 @@ const genPages = async (
   heroName: string,
   heroImg: FileLike,
   illustrationPrompts: string[]
-): Promise<string[]> => {
+): Promise<string[] | string> => {
   const totalPages = illustrationPrompts.length;
   const prompt = `Here is a photo of ${heroName}. They are going to be the hero in a colorful picture book that consists of
                   ${totalPages} pages. Each page will contain one picture. The style will be a colorful fantasy picture book. Please use
