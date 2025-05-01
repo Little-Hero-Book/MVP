@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ServerError } from '../types';
 import OpenAI, { toFile } from 'openai';
-import { Image } from 'openai/resources/images';
 import fs from 'fs';
 
 const openAIclient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -35,21 +34,24 @@ export const generateIllustrations = async (
 
     // generate actual illustrations
     const illustrations = [] as Buffer[];
-    const contextImages = [heroImg]
+    const contextImages = [heroImg];
     const initialPrompt = `These are illustrations for a short picture book of ${numberOfPages} pages.
                            The hero of the story is ${heroName}.
                            The first image is of the hero.
                            
-                           The following are the illustration prompts for each page:\n\n${illustrationPrompts.join('\n\n')}`
-    for (let i=0; i < illustrationPrompts.length; i++) {
-      const tempPrompt = initialPrompt + '\n\n' + `Generate the image for page ${i} using the following images as context and the following:
-      ${illustrationPrompts[i]}`
+                           The following are the illustration prompts for each page:\n\n${illustrationPrompts.join('\n\n')}`;
+    for (let i = 0; i < illustrationPrompts.length; i++) {
+      const tempPrompt =
+        initialPrompt +
+        '\n\n' +
+        `Generate the image for page ${i} using the following images as context and the following:
+      ${illustrationPrompts[i]}`;
       const currentIllustration = await genImg(tempPrompt, contextImages);
       contextImages.push(currentIllustration);
       illustrations.push(currentIllustration);
     }
     res.locals.illustrations = illustrations;
-    dumpBuffersToPngFiles(illustrations);  // dump the outputs to disk for testing
+    dumpBuffersToPngFiles(illustrations); // dump the outputs to disk for testing
 
     next();
   } catch (err) {
@@ -76,41 +78,64 @@ const genHeroImg = async (photo: Buffer, mimeType: string): Promise<Buffer> => {
     size: imgOutputSize,
   });
 
-  if (!rsp.data) {
+  if (!rsp.data || rsp.data.length === 0) {
     throw new ReferenceError('image data not returned for hero image');
   }
-  const rspImageData = rsp.data as Image[];
-  const rspImgBase64 = rspImageData?[0].b64_json;
-  const imgBytes = Buffer.from(rspImgBase64, 'base64');
+  const ImgBase64 = rsp.data[0].b64_json as string;
+  const imgBytes = Buffer.from(ImgBase64, 'base64');
   return imgBytes;
 };
 
-const genImg = async (prompt: string, contextImgs: Buffer[]): Promise<Buffer> => {
+const genImg = async (
+  prompt: string,
+  contextImgs: Buffer[]
+): Promise<Buffer> => {
   const rsp = await openAIclient.images.edit({
     model: imgModel,
-    image: await Promise.all(contextImgs.map(async (img) => await toFile(img, null, { type: 'image/png' }))),
+    image: await Promise.all(
+      contextImgs.map(
+        async (img) => await toFile(img, null, { type: 'image/png' })
+      )
+    ),
     prompt: prompt,
     quality: imgOutputQuality,
     size: imgOutputSize,
   });
-  return Buffer.from(rsp.data[0].b64_json, 'base64')
+
+  return Buffer.from(rsp.data[0].b64_json, 'base64');
 };
 
 const dumpBuffersToPngFiles = (imgBuffers: Buffer[]) => {
-  imgBuffers.forEach((buff, idx) => fs.writeFileSync(`${idx}.png`, buff))
+  imgBuffers.forEach((buff, idx) => fs.writeFileSync(`${idx}.png`, buff));
 };
 
 // dry-run test
-const mainTest = async () => {
-  console.log(`OPENAI_API_KEY is: ${process.env.OPENAI_API_KEY}`);
+// const mainTest = async () => {
+//   console.log(`OPENAI_API_KEY is: ${process.env.OPENAI_API_KEY}`);
 
-  console.log('The test should be here somewhere...');
+//   console.log('The test should be here somewhere...');
 
-  // test genHeroImg
-  const fs = await import('fs');
-  const inputImg = fs.readFileSync('./testHero.jpg');
-  const heroImg = await genHeroImg(inputImg, 'image/jpeg');
-  fs.writeFileSync('testHeroImg.png', heroImg);
-};
+//   // test genHeroImg
+//   const fs = await import('fs');
+//   const inputImg = fs.readFileSync('./testHero.jpg');
+//   const heroImg = await genHeroImg(inputImg, 'image/jpeg');
+//   const illustrationPrompts = [
+//     'A bright sunny schoolyard. A lively little boy named Owen with messy hair and a big grin is showing off by running laps while other kids watch. Beside him stands Hero, a quieter child with gentle eyes and a calm expression. Hero raises a finger and calmly challenges Owen to a race. The other kids in the background giggle and whisper, clearly doubting Hero.',
+//     'A race track drawn in chalk on the playground. Owen zooms ahead with a blur of motion, full of energy, kicking up dust. Hero is far behind, calmly jogging with short, steady steps. The other children cheer from the sidelines. Owen looks over his shoulder confidently, smiling smugly.',
+//     'Under a leafy tree by the track, Owen is stretched out on the grass, munching on a snack, then yawning and lying down to nap. Meanwhile, in the distance, Hero keeps walking past him quietly, step by step. A gentle breeze blows leaves across the scene.',
+//     'The finish line with a cheering group of kids. Hero is just about to cross it with a calm, focused expression. Owen is behind him, sprinting in a panic, eyes wide. A big banner says "Finish!" and the crowd of kids looks shocked and amazed. Hero wins the race with quiet determination.',
+//   ];
+//   const req = { body: { name: 'Bob' } } as Partial<Request>;
+//   const res = {
+//     locals: {
+//       heroImg: heroImg,
+//       illustrationPrompts: illustrationPrompts,
+//       illustrations: [] as Buffer[],
+//     },
+//   } as Partial<Response>;
+//   await generateIllustrations(req, res, () => {});
 
-mainTest();
+//   // fs.writeFileSync('testHeroImg.png', heroImg);
+// };
+
+// mainTest();

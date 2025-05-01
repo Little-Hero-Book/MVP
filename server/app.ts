@@ -8,34 +8,39 @@ import { databaseController } from './controllers/databaseController.js';
 import { ServerError } from './types';
 import { generateUserInputEmbeddings } from './controllers/embeddingController.js';
 import { queryPineconeDatabase } from './controllers/pineconeController.js';
+import { generateIllustrations } from './controllers/imgGenController.js';
 
 const app = express();
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024, 
-    files: 5, 
+    fileSize: 10 * 1024 * 1024,
+    files: 5,
   },
   fileFilter: (req, file, cb) => {
-
     const allowedTypes = ['image/png', 'image/jpeg', 'image/webp'];
-    
+
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PNG, JPG, and WEBP files are allowed.'));
+      cb(
+        new Error(
+          'Invalid file type. Only PNG, JPG, and WEBP files are allowed.'
+        )
+      );
     }
-  }
+  },
 });
 
 app.use(cors());
 app.use(express.json());
 
 // Update the route to handle file uploads
-app.post('/api', 
+app.post(
+  '/api',
   (req, res, next) => {
     upload.array('images')(req, res, (err) => {
       if (err) {
@@ -54,6 +59,7 @@ app.post('/api',
   queryPineconeDatabase,
   queryOpenAI,
   databaseController,
+  generateIllustrations,
   (_req, res) => {
     res.status(200).json({
       openAIResponse: res.locals.openAIResponse,
@@ -77,7 +83,7 @@ const errorHandler: ErrorRequestHandler = (
   console.error('Error details:', {
     log: errorObj.log,
     status: errorObj.status,
-    message: errorObj.message
+    message: errorObj.message,
   });
   res.status(errorObj.status).json(errorObj.message);
 };
