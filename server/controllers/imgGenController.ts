@@ -29,6 +29,10 @@ export const generateIllustrations = async (
     res.locals.heroImg = heroImg;
 
     // get info about number of illustrations and their prompts
+    // first we'll grab the prompts from the OpenAI Response (kinda hacky but...)
+    res.locals.illustrationPrompts = JSON.parse(
+      res.locals.openAIResponse
+    ).stories[0].illustrationPrompts;
     const illustrationPrompts = [...res.locals.illustrationPrompts];
     const numberOfPages = illustrationPrompts.length;
 
