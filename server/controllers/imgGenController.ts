@@ -1,11 +1,10 @@
 import dotenv from 'dotenv';
-import path from 'path';
 import { Request, Response, NextFunction } from 'express';
 import OpenAI, { toFile } from 'openai';
 import { readFile, writeFile } from 'fs/promises';
 import { FileLike } from 'openai/uploads';
 
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: '../../.env' });
 
 const client = new OpenAI();
 
