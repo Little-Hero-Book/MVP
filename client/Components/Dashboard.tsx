@@ -8,18 +8,18 @@ const Dashboard = () => {
     favoriteThing: '',
     favoriteColor: '',
     storyType: '',
-   // storyElement: '',
-    
+    // storyElement: '',
   });
   const [files, setFiles] = useState<FileList | null>(null);
   const [story, setStory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pdfBlob, setPdfBlob] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     console.log(`Updating form field: ${name} = ${value}`);
-    setForm(prevForm => {
+    setForm((prevForm) => {
       const newForm = { ...prevForm, [name]: value };
       console.log('Updated form state:', newForm);
       return newForm;
@@ -36,17 +36,18 @@ const Dashboard = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       const formData = new FormData();
-      
+
       // Append form fields with correct names
       Object.entries(form).forEach(([key, value]) => {
-        if (value) {  // Only append if value exists
+        if (value) {
+          // Only append if value exists
           formData.append(key, value);
         }
       });
-      
+
       // Append files if they exist
       if (files) {
         Array.from(files).forEach((file) => {
@@ -61,8 +62,11 @@ const Dashboard = () => {
           console.log(`${key}: ${value}`);
         }
       }
-      
-      console.log('Files:', files ? Array.from(files).map(f => f.name) : 'No files selected');
+
+      console.log(
+        'Files:',
+        files ? Array.from(files).map((f) => f.name) : 'No files selected'
+      );
 
       const response = await fetch('/api', {
         method: 'POST',
@@ -75,6 +79,7 @@ const Dashboard = () => {
       } else {
         const data = await response.json();
         setStory(data.databaseResponse);
+        setPdfBlob(data.pdfBlob);
       }
     } catch (_err) {
       setError('Error processing your request.');
@@ -83,44 +88,64 @@ const Dashboard = () => {
     }
   };
 
+  const handleDownloadPDF = () => {
+    if (!pdfBlob) return;
+
+    const byteCharacters = atob(pdfBlob);
+    const byteNumbers = Array.from(byteCharacters).map((char) =>
+      char.charCodeAt(0)
+    );
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'storybook.pdf';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="container">
       <form onSubmit={handleSubmit}>
         <input
-          name='name'
+          name="name"
           value={form.name}
           onChange={handleChange}
-          placeholder='Name'
+          placeholder="Name"
         />
         <input
-          name='age'
+          name="age"
           value={form.age}
           onChange={handleChange}
-          placeholder='Age'
+          placeholder="Age"
         />
         <input
-          name='trait'
+          name="trait"
           value={form.trait}
           onChange={handleChange}
-          placeholder='Trait'
+          placeholder="Trait"
         />
         <input
-          name='favoriteThing'
+          name="favoriteThing"
           value={form.favoriteThing}
           onChange={handleChange}
-          placeholder='Favorite Thing'
+          placeholder="Favorite Thing"
         />
         <input
-          name='favoriteColor'
+          name="favoriteColor"
           value={form.favoriteColor}
           onChange={handleChange}
-          placeholder='Favorite Color'
+          placeholder="Favorite Color"
         />
         <input
-          name='storyType'
+          name="storyType"
           value={form.storyType}
           onChange={handleChange}
-          placeholder='Story Type'
+          placeholder="Story Type"
         />
         {/* <input
           name='storyElement'
@@ -138,10 +163,28 @@ const Dashboard = () => {
         <button type="submit" disabled={loading}>
           {loading ? 'Generating...' : 'Generate Story'}
         </button>
+        <button
+          onClick={handleDownloadPDF}
+          disabled={!pdfBlob}
+          style={{
+            marginTop: '10px',
+            padding: '0.75rem 1.5rem',
+            backgroundColor: pdfBlob ? '#007bff' : '#ccc',
+            color: '#fff',
+            cursor: pdfBlob ? 'pointer' : 'not-allowed',
+            border: 'none',
+            borderRadius: '4px',
+          }}
+          title={
+            pdfBlob ? '' : 'Generate the story first to enable downloading'
+          }
+        >
+          📤 Download your storybook
+        </button>
       </form>
 
       {error && <p className="error">{error}</p>}
-      
+
       {story && (
         <div className="story-container">
           <h2>Your Story</h2>

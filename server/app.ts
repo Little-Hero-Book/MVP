@@ -9,6 +9,7 @@ import { ServerError } from './types';
 import { generateUserInputEmbeddings } from './controllers/embeddingController.js';
 import { queryPineconeDatabase } from './controllers/pineconeController.js';
 import { generateIllustrations } from './controllers/imgGenController.js';
+import { generatePDF } from './controllers/pdfController.js';
 
 const app = express();
 
@@ -60,10 +61,12 @@ app.post(
   queryOpenAI,
   databaseController,
   generateIllustrations,
+  generatePDF,
   (_req, res) => {
     res.status(200).json({
       openAIResponse: res.locals.openAIResponse,
       databaseResponse: res.locals.databaseResponse,
+      pdfBlob: res.locals.pdfBlob,
     });
   }
 );
