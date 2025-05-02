@@ -41,28 +41,20 @@ export const generatePDF: RequestHandler = async (_req, res, next) => {
     for (let i = 0; i < pageTexts.length; i++) {
       const page = pdfDoc.addPage([pageWidth, pageHeight]);
       const text = pageTexts[i];
-      const imageUrl = illustrations[i];
+      const imgBytes = illustrations[i];
 
-      if (imageUrl) {
-        try {
-          const imgBytes = await fetch(imageUrl).then((res) =>
-            res.arrayBuffer()
-          );
-          const isPng = imageUrl.toLowerCase().endsWith('.png');
-          const image = isPng
-            ? await pdfDoc.embedPng(imgBytes)
-            : await pdfDoc.embedJpg(imgBytes);
-          const imgDims = image.scaleToFit(pageWidth - 2 * margin, 250);
+      try {
+        const image = await pdfDoc.embedPng(imgBytes);
+        const imgDims = image.scaleToFit(pageWidth - 2 * margin, 250);
 
-          page.drawImage(image, {
-            x: (pageWidth - imgDims.width) / 2,
-            y: pageHeight - margin - imgDims.height,
-            width: imgDims.width,
-            height: imgDims.height,
-          });
-        } catch (imgErr) {
-          console.warn(`Failed to embed image for page ${i}:`, imgErr);
-        }
+        page.drawImage(image, {
+          x: (pageWidth - imgDims.width) / 2,
+          y: pageHeight - margin - imgDims.height,
+          width: imgDims.width,
+          height: imgDims.height,
+        });
+      } catch (imgErr) {
+        console.warn(`Failed to embed image for page ${i}:`, imgErr);
       }
 
       // Draw text below image

@@ -64,7 +64,7 @@ export const generateIllustrations = async (
     fs.writeFileSync('heroImg.png', heroImg);
     dumpBuffersToPngFiles(illustrations); // dump the outputs to disk for testing
 
-    next();
+    return next();
   } catch (err) {
     const serverError: ServerError = {
       log: `Error generating illustrations: ${err}`,
